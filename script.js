@@ -1,68 +1,55 @@
 const video = document.getElementById("video");
-const trackEn = document.getElementById("track-en");
-const trackKo = document.getElementById("track-ko");
 
-// 기본은 영어 자막 보이기
-trackEn.mode = "showing";
-trackKo.mode = "hidden";
+// 자막/티저 설정을 초기화하는 함수
+function initPlayer() {
+  const tracks = video.textTracks;
 
-// ▼ 15초 티저 제한
-video.addEventListener("timeupdate", () => {
-  if (video.currentTime > 15) {
-    video.pause();
-    video.currentTime = 0; // 처음으로 돌아가 반복 가능
+  // 트랙이 2개(영어/한국어) 있는지 확인
+  if (tracks.length < 2) {
+    console.warn("Not enough text tracks");
+    return;
   }
-});
 
-// ▼ 마우스 눌렀을 때 영어 / 때면 한국어
-document.body.addEventListener("mousedown", () => {
-  trackEn.mode = "showing";
-  trackKo.mode = "hidden";
-});
+  const en = tracks[0]; // 첫 번째 트랙: English
+  const ko = tracks[1]; // 두 번째 트랙: Korean
 
-document.body.addEventListener("mouseup", () => {
-  trackEn.mode = "hidden";
-  trackKo.mode = "showing";
-});
+  // ✅ 기본은 한국어 자막 보이기
+  en.mode = "hidden";
+  ko.mode = "showing";
 
-// ▼ 모바일 터치
-document.body.addEventListener("touchstart", () => {
-  trackEn.mode = "showing";
-  trackKo.mode = "hidden";
-});
+  // 자막 전환 함수
+  const showEn = () => {
+    en.mode = "showing";
+    ko.mode = "hidden";
+  };
 
-document.body.addEventListener("touchend", () => {
-  trackEn.mode = "hidden";
-  trackKo.mode = "showing";
-});
+  const showKo = () => {
+    en.mode = "hidden";
+    ko.mode = "showing";
+  };
 
-// ▼ 사용자 업로드: 영상
-document.getElementById("upload-video").addEventListener("change", function (e) {
-  const file = e.target.files[0];
-  if (!file) return;
+  // 🔁 15초 티저 제한
+  video.addEventListener("timeupdate", () => {
+    if (video.currentTime > 15) {
+      video.pause();
+      video.currentTime = 0; // 처음으로 되돌리기
+    }
+  });
 
-  const url = URL.createObjectURL(file);
-  video.src = url;
+  // 🖱 마우스 눌렀을 때 → 영어
+  document.body.addEventListener("mousedown", showEn);
+  // 🖱 손 뗄 때 → 한국어
+  document.body.addEventListener("mouseup", showKo);
 
-  // 트랙 새로고침
-  video.load();
-  video.play();
-});
+  // 📱 터치 시작 → 영어
+  document.body.addEventListener("touchstart", showEn);
+  // 📱 터치 끝 → 한국어
+  document.body.addEventListener("touchend", showKo);
+}
 
-// ▼ 사용자 업로드: 영어 자막
-document.getElementById("upload-en").addEventListener("change", function (e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  trackEn.src = URL.createObjectURL(file);
-  video.load();
-});
-
-// ▼ 사용자 업로드: 한국어 자막
-document.getElementById("upload-ko").addEventListener("change", function (e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  trackKo.src = URL.createObjectURL(file);
-  video.load();
-});
+// 비디오 메타데이터가 준비된 후에 textTracks 접근
+if (video.readyState >= 1) {
+  initPlayer();
+} else {
+  video.addEventListener("loadedmetadata", initPlayer);
+}
