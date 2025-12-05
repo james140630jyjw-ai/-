@@ -3,8 +3,8 @@ body {
   color: #eee;
   font-family: Arial, sans-serif;
   text-align: center;
-  margin: 0;
   padding: 20px;
+  margin: 0;
 }
 
 h1 {
@@ -17,77 +17,48 @@ h1 {
   font-size: 14px;
 }
 
-/* wrapper: 일반/전체화면 모두 대응 */
-#player-wrapper {
+#player-container {
   width: 90%;
   max-width: 900px;
-  margin: 0 auto;
-  position: relative;
+  margin: 0 auto 30px auto;
 }
 
-/* 가짜 전체화면 버튼 */
-#fullscreen-btn {
-  position: absolute;
-  top: -10px;
-  right: 0;
-  padding: 5px 10px;
-  background: #444;
-  border: none;
-  color: white;
-  cursor: pointer;
-  border-radius: 6px;
-  z-index: 20;
-}
-
-#fullscreen-btn:hover {
-  background: #666;
-}
-
-/* 비디오 + overlay 영역 */
-#player-container {
-  position: relative;
-}
-
-/* 비디오 본체 */
 video {
   width: 100%;
   border-radius: 10px;
-  background: black;
+  outline: none;
+  background: #000;
 }
 
-/* overlay: 항상 비디오 위에 있는 터치판 */
-#overlay {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 15;
-  background: transparent; /* 투명 */
-  pointer-events: auto;
+.upload-area {
+  width: 90%;
+  max-width: 900px;
+  margin: 0 auto;
+  margin-top: 40px;
+  padding: 20px;
+  background: #222;
+  border-radius: 10px;
+  text-align: left;
 }
 
-/* 가짜 전체화면 모드 */
-.fullscreen-mode {
-  position: fixed !important;
-  top: 0;
-  left: 0;
-  width: 100vw !important;
-  height: 100vh !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  z-index: 9999 !important;
-  background: black;
+.upload-area h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
 }
 
-.fullscreen-mode video {
-  height: 100% !important;
-  width: 100% !important;
-  object-fit: contain;
+label {
+  display: block;
+  margin-bottom: 15px;
+  font-size: 14px;
 }
 
-.fullscreen-mode #fullscreen-btn {
-  top: 10px;
-  right: 10px;
-  z-index: 99999;
+input[type="file"] {
+  margin-left: 8px;
+  font-size: 13px;
+}
+
+.hint {
+  margin-top: 20px;
+  font-size: 13px;
+  opacity: 0.8;
 }
