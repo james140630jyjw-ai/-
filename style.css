@@ -1,0 +1,47 @@
+body {
+  background: #111;
+  color: #eee;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+.guide {
+  opacity: 0.8;
+  margin-bottom: 30px;
+}
+
+#player-container {
+  width: 80%;
+  margin: 0 auto 30px auto;
+}
+
+video {
+  width: 100%;
+  border-radius: 10px;
+  outline: none;
+  background: #000;
+}
+
+.upload-area {
+  width: 80%;
+  margin: 40px auto;
+  padding: 20px;
+  background: #222;
+  border-radius: 10px;
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+input[type="file"] {
+  margin-left: 10px;
+}

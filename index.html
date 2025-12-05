@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Interactive Dual Subtitle Player</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <h1>Interactive Dual Subtitle Player</h1>
+  <p class="guide">Press & Hold → English / Release → Korean</p>
+
+  <div id="player-container">
+    <video id="video" controls>
+      <source src="sample/sample_teaser.webm" type="video/webm" />
+      <track id="track-en" label="English" kind="subtitles" srclang="en" src="sample/sample_en.vtt" default>
+      <track id="track-ko" label="Korean" kind="subtitles" srclang="ko" src="sample/sample_ko.vtt">
+    </video>
+  </div>
+
+  <div class="upload-area">
+    <h2>Use Your Own Video / Subtitles</h2>
+
+    <label>
+      Upload Video:
+      <input id="upload-video" type="file" accept="video/*">
+    </label>
+
+    <label>
+      Upload English Subtitle (.vtt):
+      <input id="upload-en" type="file" accept=".vtt">
+    </label>
+
+    <label>
+      Upload Korean Subtitle (.vtt):
+      <input id="upload-ko" type="file" accept=".vtt">
+    </label>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
