@@ -1,20 +1,22 @@
 const video = document.getElementById("video");
+const overlay = document.getElementById("touch-overlay");
+
+// 자막 업로드 요소들
 const uploadVideo = document.getElementById("upload-video");
 const uploadEn = document.getElementById("upload-en");
 const uploadKo = document.getElementById("upload-ko");
 
-// ---------------------------------------------------------
-// 1) 🔒 비디오 화면 클릭해도 재생/일시정지 안 되도록 막기
-//    (컨트롤바 버튼으로만 재생/멈춤 가능)
-// ---------------------------------------------------------
+// ------------------------------
+// 1) 비디오 기본 클릭 막기
+// ------------------------------
 video.addEventListener("click", (e) => {
   e.preventDefault();
   e.stopPropagation();
 });
 
-// ---------------------------------------------------------
-// 2) 사용자 업로드 기능 (PC/모바일 공통)
-// ---------------------------------------------------------
+// ------------------------------
+// 2) 업로드 기능
+// ------------------------------
 if (uploadVideo) {
   uploadVideo.addEventListener("change", (event) => {
     const file = event.target.files[0];
@@ -48,9 +50,9 @@ if (uploadKo) {
   });
 }
 
-// ---------------------------------------------------------
-// 3) 플레이어 초기화 + 자막 토글
-// ---------------------------------------------------------
+// ------------------------------
+// 3) 자막 토글 + 티저 제한
+// ------------------------------
 function initPlayer() {
   const tracks = video.textTracks;
 
@@ -59,12 +61,8 @@ function initPlayer() {
     return;
   }
 
-  const en = tracks[0]; // English
-  const ko = tracks[1]; // Korean
-
-  // ✅ 기본은 한국어 자막
-  en.mode = "hidden";
-  ko.mode = "showing";
+  const en = tracks[0];
+  const ko = tracks[1];
 
   const showEn = () => {
     en.mode = "showing";
@@ -76,9 +74,10 @@ function initPlayer() {
     ko.mode = "showing";
   };
 
-  // ---------------------------------------------------------
-  // 4) 15초 티저 제한 (15초 넘으면 처음으로 되돌리기)
-  // ---------------------------------------------------------
+  // 기본 한국어
+  showKo();
+
+  // 15초 티저
   video.addEventListener("timeupdate", () => {
     if (video.currentTime > 15) {
       video.pause();
@@ -86,29 +85,19 @@ function initPlayer() {
     }
   });
 
-  // ---------------------------------------------------------
-  // 5) 🖱 / 📱 마우스 + 터치 통합: pointer 이벤트로 처리
-  //    - pointerdown: 누르는 동안 영어
-  //    - pointerup  : 떼면 한국어
-  // ---------------------------------------------------------
-  window.addEventListener(
-    "pointerdown",
-    () => {
-      showEn();
-    },
-    { passive: true }
-  );
+  // ------------------------------
+  // ⛑ 핵심: overlay에서만 pointer 이벤트 받기
+  // ------------------------------
+  overlay.addEventListener("pointerdown", () => {
+    showEn();
+  });
 
-  window.addEventListener(
-    "pointerup",
-    () => {
-      showKo();
-    },
-    { passive: true }
-  );
+  overlay.addEventListener("pointerup", () => {
+    showKo();
+  });
 }
 
-// 비디오 메타데이터 로드 후 초기화
+// 비디오 준비되면 init 실행
 if (video.readyState >= 1) {
   initPlayer();
 } else {
