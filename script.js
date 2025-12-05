@@ -1,90 +1,43 @@
 const video = document.getElementById("video");
-const overlay = document.getElementById("overlay");
-const fsBtn = document.getElementById("fullscreen-btn");
-const wrapper = document.getElementById("player-wrapper");
+const uploadVideo = document.getElementById("upload-video");
+const uploadEn = document.getElementById("upload-en");
+const uploadKo = document.getElementById("upload-ko");
 
-// ===============================
-// 자막 초기화
-// ===============================
-let tracks;
+let enTrack = null;
+let koTrack = null;
 
+// ------------------------------
+// 1) 자막 트랙 초기화
+// ------------------------------
 function initTracks() {
-  tracks = video.textTracks;
-  if (tracks.length < 2) return;
+  const tracks = video.textTracks;
+  if (tracks.length < 2) {
+    console.warn("Not enough text tracks");
+    return;
+  }
 
-  const en = tracks[0];
-  const ko = tracks[1];
+  enTrack = tracks[0]; // English
+  koTrack = tracks[1]; // Korean
 
-  en.mode = "hidden";
-  ko.mode = "showing";
-
-  return { en, ko };
+  // 기본은 한국어
+  showKo();
 }
 
-let { en, ko } = initTracks();
-
-// ===============================
-// 자막 전환
-// ===============================
 function showEn() {
-  en.mode = "showing";
-  ko.mode = "hidden";
+  if (!enTrack || !koTrack) return;
+  enTrack.mode = "showing";
+  koTrack.mode = "hidden";
 }
 
 function showKo() {
-  en.mode = "hidden";
-  ko.mode = "showing";
+  if (!enTrack || !koTrack) return;
+  enTrack.mode = "hidden";
+  koTrack.mode = "showing";
 }
 
-// ===============================
-// 비디오 아래 30% 영역 판별
-// ===============================
-function isBottomZone(e) {
-  const rect = video.getBoundingClientRect();
-  const y = e.clientY;
-  const x = e.clientX;
-
-  if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
-    return false;
-  }
-
-  const relativeY = (y - rect.top) / rect.height;
-  return relativeY >= 0.70; // 아래 30%
-}
-
-// ===============================
-// overlay 터치로 자막 전환
-// ===============================
-let active = false;
-
-overlay.addEventListener("pointerdown", (e) => {
-  if (isBottomZone(e)) {
-    active = true;
-    showEn();
-    e.preventDefault();
-    e.stopPropagation();
-  }
-});
-
-overlay.addEventListener("pointerup", (e) => {
-  if (active) {
-    showKo();
-    active = false;
-    e.preventDefault();
-    e.stopPropagation();
-  }
-});
-
-overlay.addEventListener("pointerleave", () => {
-  if (active) {
-    showKo();
-    active = false;
-  }
-});
-
-// ===============================
-// 15초 티저 제한
-// ===============================
+// ------------------------------
+// 2) 15초 티저 제한
+// ------------------------------
 video.addEventListener("timeupdate", () => {
   if (video.currentTime > 15) {
     video.pause();
@@ -92,19 +45,98 @@ video.addEventListener("timeupdate", () => {
   }
 });
 
-// ===============================
-// 가짜 전체화면 토글
-// ===============================
-let fs = false;
+// ------------------------------
+// 3) 업로드 기능
+// ------------------------------
+if (uploadVideo) {
+  uploadVideo.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    video.src = URL.createObjectURL(file);
+    video.load();
+    video.play();
+  });
+}
 
-fsBtn.addEventListener("click", () => {
-  fs = !fs;
+if (uploadEn) {
+  uploadEn.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const trackEl = document.getElementById("track-en");
+    trackEl.src = URL.createObjectURL(file);
+    video.load();
+  });
+}
 
-  if (fs) {
-    wrapper.classList.add("fullscreen-mode");
-    fsBtn.innerText = "⛶ 종료";
-  } else {
-    wrapper.classList.remove("fullscreen-mode");
-    fsBtn.innerText = "⛶ 전체화면";
-  }
+if (uploadKo) {
+  uploadKo.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const trackEl = document.getElementById("track-ko");
+    trackEl.src = URL.createObjectURL(file);
+    video.load();
+  });
+}
+
+// ------------------------------
+// 4) 자막 홀드 전환 (PC + 모바일)
+//    - 화면 아무 곳이나 눌러서 홀드 → 영어
+//    - 손/마우스 떼면 → 한국어
+// ------------------------------
+function setupHoldEvents() {
+  // PC용
+  document.addEventListener("mousedown", () => {
+    showEn();
+  });
+
+  document.addEventListener("mouseup", () => {
+    showKo();
+  });
+
+  document.addEventListener("mouseleave", () => {
+    showKo();
+  });
+
+  // 모바일용
+  document.addEventListener(
+    "touchstart",
+    (e) => {
+      showEn();
+      // 기본 스크롤을 막고 싶으면 아래 주석 해제
+      // e.preventDefault();
+    },
+    { passive: true }
+  );
+
+  document.addEventListener(
+    "touchend",
+    (e) => {
+      showKo();
+      // e.preventDefault();
+    },
+    { passive: true }
+  );
+}
+
+// ------------------------------
+// 5) 비디오 클릭으로 재생/멈춤되는 것 일부 완화
+//    (완전 차단은 기기별로 불안정해서,
+//     여기서는 자막에만 집중하고 브라우저 기본은 살려둔다)
+// ------------------------------
+video.addEventListener("click", (e) => {
+  // 원하면 이걸 주석 처리하면,
+  // 영상 탭해서 재생/멈춤하는 기본 동작이 다시 살아난다.
+  // e.preventDefault();
+  // e.stopPropagation();
 });
+
+// ------------------------------
+// 6) 초기 실행
+// ------------------------------
+if (video.readyState >= 1) {
+  initTracks();
+} else {
+  video.addEventListener("loadedmetadata", initTracks);
+}
+
+setupHoldEvents();
