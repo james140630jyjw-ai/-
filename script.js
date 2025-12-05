@@ -1,23 +1,60 @@
 const video = document.getElementById("video");
+const uploadVideo = document.getElementById("upload-video");
+const uploadEn = document.getElementById("upload-en");
+const uploadKo = document.getElementById("upload-ko");
 
-// 자막/티저 설정을 초기화하는 함수
+// ---------------------------------------------------------
+// 1) 🔒 비디오 화면 클릭해도 재생/일시정지 안 되도록 막기
+// ---------------------------------------------------------
+video.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+});
+
+// ---------------------------------------------------------
+// 2) 사용자 업로드 기능
+// ---------------------------------------------------------
+uploadVideo.addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    video.src = URL.createObjectURL(file);
+  }
+});
+
+uploadEn.addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const track = document.getElementById("track-en");
+    track.src = URL.createObjectURL(file);
+  }
+});
+
+uploadKo.addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const track = document.getElementById("track-ko");
+    track.src = URL.createObjectURL(file);
+  }
+});
+
+// ---------------------------------------------------------
+// 3) 자막 토글 함수
+// ---------------------------------------------------------
 function initPlayer() {
   const tracks = video.textTracks;
 
-  // 트랙이 2개(영어/한국어) 있는지 확인
   if (tracks.length < 2) {
     console.warn("Not enough text tracks");
     return;
   }
 
-  const en = tracks[0]; // 첫 번째 트랙: English
-  const ko = tracks[1]; // 두 번째 트랙: Korean
+  const en = tracks[0]; // English
+  const ko = tracks[1]; // Korean
 
-  // ✅ 기본은 한국어 자막 보이기
+  // 기본 한국어 표시
   en.mode = "hidden";
   ko.mode = "showing";
 
-  // 자막 전환 함수
   const showEn = () => {
     en.mode = "showing";
     ko.mode = "hidden";
@@ -28,26 +65,39 @@ function initPlayer() {
     ko.mode = "showing";
   };
 
-  // 🔁 15초 티저 제한
+  // ---------------------------------------------------------
+  // 4) 15초 티저 제한
+  // ---------------------------------------------------------
   video.addEventListener("timeupdate", () => {
     if (video.currentTime > 15) {
       video.pause();
-      video.currentTime = 0; // 처음으로 되돌리기
+      video.currentTime = 0;
     }
   });
 
-  // 🖱 마우스 눌렀을 때 → 영어
-  document.body.addEventListener("mousedown", showEn);
-  // 🖱 손 뗄 때 → 한국어
-  document.body.addEventListener("mouseup", showKo);
+  // ---------------------------------------------------------
+  // 5) 마우스/터치 홀드로 자막 전환
+  // ---------------------------------------------------------
+  document.addEventListener("mousedown", (e) => {
+    showEn();
+  });
 
-  // 📱 터치 시작 → 영어
-  document.body.addEventListener("touchstart", showEn);
-  // 📱 터치 끝 → 한국어
-  document.body.addEventListener("touchend", showKo);
+  document.addEventListener("mouseup", (e) => {
+    showKo();
+  });
+
+  document.addEventListener("touchstart", (e) => {
+    showEn();
+  });
+
+  document.addEventListener("touchend", (e) => {
+    showKo();
+  });
 }
 
-// 비디오 메타데이터가 준비된 후에 textTracks 접근
+// ---------------------------------------------------------
+// 비디오가 준비되면 초기화 실행
+// ---------------------------------------------------------
 if (video.readyState >= 1) {
   initPlayer();
 } else {
