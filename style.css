@@ -30,22 +30,6 @@ video {
   background: #000;
 }
 
-/* 자막 토글 영역 */
-#subtitle-toggle-zone {
-  margin-top: 10px;
-  padding: 12px 0;
-  background: #333;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  user-select: none;
-  opacity: 0.9;
-}
-
-#subtitle-toggle-zone:hover {
-  opacity: 1;
-}
-
 .upload-area {
   width: 90%;
   max-width: 900px;
@@ -71,4 +55,10 @@ label {
 input[type="file"] {
   margin-left: 8px;
   font-size: 13px;
+}
+
+.hint {
+  margin-top: 20px;
+  font-size: 13px;
+  opacity: 0.8;
 }
