@@ -1,43 +1,26 @@
 const video = document.getElementById("video");
-const uploadVideo = document.getElementById("upload-video");
-const uploadEn = document.getElementById("upload-en");
-const uploadKo = document.getElementById("upload-ko");
+const trackEn = document.getElementById("track-en");
+const trackKo = document.getElementById("track-ko");
 
-let enTrack = null;
-let koTrack = null;
+const uploadVideoInput = document.getElementById("upload-video");
+const uploadEnInput = document.getElementById("upload-en");
+const uploadKoInput = document.getElementById("upload-ko");
 
-// ------------------------------
-// 1) 자막 트랙 초기화
-// ------------------------------
-function initTracks() {
-  const tracks = video.textTracks;
-  if (tracks.length < 2) {
-    console.warn("Not enough text tracks");
-    return;
-  }
-
-  enTrack = tracks[0]; // English
-  koTrack = tracks[1]; // Korean
-
-  // 기본은 한국어
-  showKo();
+// ----- 자막 표시 함수 -----
+function showEnglish() {
+  trackEn.mode = "showing";
+  trackKo.mode = "hidden";
 }
 
-function showEn() {
-  if (!enTrack || !koTrack) return;
-  enTrack.mode = "showing";
-  koTrack.mode = "hidden";
+function showKorean() {
+  trackEn.mode = "hidden";
+  trackKo.mode = "showing";
 }
 
-function showKo() {
-  if (!enTrack || !koTrack) return;
-  enTrack.mode = "hidden";
-  koTrack.mode = "showing";
-}
+// 처음에는 한국어 자막
+showKorean();
 
-// ------------------------------
-// 2) 15초 티저 제한
-// ------------------------------
+// ----- 15초 티저 제한 -----
 video.addEventListener("timeupdate", () => {
   if (video.currentTime > 15) {
     video.pause();
@@ -45,98 +28,62 @@ video.addEventListener("timeupdate", () => {
   }
 });
 
-// ------------------------------
-// 3) 업로드 기능
-// ------------------------------
-if (uploadVideo) {
-  uploadVideo.addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    video.src = URL.createObjectURL(file);
-    video.load();
-    video.play();
-  });
-}
+// ----- 자막 전환: 마우스 / 터치 -----
 
-if (uploadEn) {
-  uploadEn.addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const trackEl = document.getElementById("track-en");
-    trackEl.src = URL.createObjectURL(file);
-    video.load();
-  });
-}
-
-if (uploadKo) {
-  uploadKo.addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const trackEl = document.getElementById("track-ko");
-    trackEl.src = URL.createObjectURL(file);
-    video.load();
-  });
-}
-
-// ------------------------------
-// 4) 자막 홀드 전환 (PC + 모바일)
-//    - 화면 아무 곳이나 눌러서 홀드 → 영어
-//    - 손/마우스 떼면 → 한국어
-// ------------------------------
-function setupHoldEvents() {
-  // PC용
-  document.addEventListener("mousedown", () => {
-    showEn();
-  });
-
-  document.addEventListener("mouseup", () => {
-    showKo();
-  });
-
-  document.addEventListener("mouseleave", () => {
-    showKo();
-  });
-
-  // 모바일용
-  document.addEventListener(
-    "touchstart",
-    (e) => {
-      showEn();
-      // 기본 스크롤을 막고 싶으면 아래 주석 해제
-      // e.preventDefault();
-    },
-    { passive: true }
-  );
-
-  document.addEventListener(
-    "touchend",
-    (e) => {
-      showKo();
-      // e.preventDefault();
-    },
-    { passive: true }
-  );
-}
-
-// ------------------------------
-// 5) 비디오 클릭으로 재생/멈춤되는 것 일부 완화
-//    (완전 차단은 기기별로 불안정해서,
-//     여기서는 자막에만 집중하고 브라우저 기본은 살려둔다)
-// ------------------------------
-video.addEventListener("click", (e) => {
-  // 원하면 이걸 주석 처리하면,
-  // 영상 탭해서 재생/멈춤하는 기본 동작이 다시 살아난다.
-  // e.preventDefault();
-  // e.stopPropagation();
+// 마우스를 누르는 순간 → 영어
+window.addEventListener("mousedown", (e) => {
+  if (e.button !== 0) return; // 왼쪽 버튼만
+  showEnglish();
 });
 
-// ------------------------------
-// 6) 초기 실행
-// ------------------------------
-if (video.readyState >= 1) {
-  initTracks();
-} else {
-  video.addEventListener("loadedmetadata", initTracks);
-}
+// 마우스를 떼는 순간 → 한국어
+window.addEventListener("mouseup", (e) => {
+  if (e.button !== 0) return;
+  showKorean();
+});
 
-setupHoldEvents();
+// 터치 시작 → 영어
+window.addEventListener("touchstart", () => {
+  showEnglish();
+});
+
+// 터치 끝 → 한국어
+window.addEventListener("touchend", () => {
+  showKorean();
+});
+
+// ----- 비디오 클릭으로 재생/일시정지 토글되는 것만 막기 -----
+video.addEventListener("click", (e) => {
+  e.preventDefault(); // play/pause 토글만 막음
+});
+
+// ----- 업로드 기능 -----
+
+// 영상 업로드
+uploadVideoInput.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const url = URL.createObjectURL(file);
+  video.src = url;
+  video.load();
+  video.play();
+});
+
+// 영어 자막 업로드
+uploadEnInput.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  trackEn.src = URL.createObjectURL(file);
+  video.load();
+});
+
+// 한국어 자막 업로드
+uploadKoInput.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  trackKo.src = URL.createObjectURL(file);
+  video.load();
+});
